@@ -1,0 +1,116 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EZmobilehomedeals.com - Buy & Sell Mobile Homes & Land</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-green-50 font-sans">
+    <!-- Navigation Bar -->
+    <nav class="bg-white shadow-md p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-gray-800">EZmobilehomedeals.com</h1>
+            <div class="space-x-4">
+                <a href="#home" class="text-gray-600 hover:text-green-600">Home</a>
+                <a href="#contact" class="text-gray-600 hover:text-green-600">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="bg-green-600 text-white py-20">
+        <div class="container mx-auto text-center px-4">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Buy or Sell Mobile Homes, Land & Parks</h2>
+            <p class="text-lg md:text-xl mb-6 max-w-2xl mx-auto">EZmobilehomedeals.com is your trusted partner for buying and selling mobile homes, land, and mobile home parks. Get started today!</p>
+            <div class="space-x-4">
+                <a href="#contact" class="bg-white text-green-600 px-6 py-3 rounded-full hover:bg-gray-100 font-semibold">Contact Us Now</a>
+                <a href="tel:2107010378" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-full hover:bg-white hover:text-green-600 font-semibold">Call or Text 210.701.0378</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 bg-green-100">
+        <div class="container mx-auto text-center px-4">
+            <h2 class="text-3xl font-bold mb-6">Get in Touch with EZmobilehomedeals.com</h2>
+            <p class="text-gray-600 mb-6 max-w-2xl mx-auto">Ready to buy or sell? Reach out to us for fast, reliable service.</p>
+            <div class="text-gray-600 mb-6">
+                <p>Phone: <a href="tel:2107010378" class="text-green-600 hover:underline">210.701.0378</a></p>
+                <p>Email: <a href="mailto:ezmobilehomedeals@gmail.com" class="text-green-600 hover:underline">ezmobilehomedeals@gmail.com</a></p>
+            </div>
+            <div class="max-w-md mx-auto">
+                <input type="text" placeholder="Your Name" class="w-full p-3 mb-4 border rounded border-green-200">
+                <input type="email" placeholder="Your Email" class="w-full p-3 mb-4 border rounded border-green-200">
+                <select class="w-full p-3 mb-4 border rounded border-green-200">
+                    <option value="" disabled selected>I’m Interested In...</option>
+                    <option value="buy">Buying a Property</option>
+                    <option value="sell">Selling a Property</option>
+                    <option value="other">Other</option>
+                </select>
+                <textarea placeholder="Tell us about your needs" class="w-full p-3 mb-4 border rounded border-green-200"></textarea>
+                <button class="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 w-full">Send Message</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-green-800 text-white py-6">
+        <div class="container mx-auto text-center">
+            <p>Contact: <a href="tel:2107010378" class="text-green-200 hover:underline">210.701.0378</a> | <a href="mailto:ezmobilehomedeals@gmail.com" class="text-green-200 hover:underline">ezmobilehomedeals@gmail.com</a></p>
+            <p>&copy; 2025 EZmobilehomedeals.com. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
