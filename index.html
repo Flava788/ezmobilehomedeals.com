@@ -1,49 +1,13 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EZmobilehomedeals.com - Buy & Sell Mobile Homes & Land</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .honeypot { display: none; }
+    </style>
 </head>
 <body class="bg-green-50 font-sans">
     <!-- Navigation Bar -->
@@ -78,18 +42,20 @@
                 <p>Phone: <a href="tel:2107010378" class="text-green-600 hover:underline">210.701.0378</a></p>
                 <p>Email: <a href="mailto:ezmobilehomedeals@gmail.com" class="text-green-600 hover:underline">ezmobilehomedeals@gmail.com</a></p>
             </div>
-            <div class="max-w-md mx-auto">
-                <input type="text" placeholder="Your Name" class="w-full p-3 mb-4 border rounded border-green-200">
-                <input type="email" placeholder="Your Email" class="w-full p-3 mb-4 border rounded border-green-200">
-                <select class="w-full p-3 mb-4 border rounded border-green-200">
+            <form id="contact-form" action="https://formspree.io/f/mqalllkk" method="POST" class="max-w-md mx-auto">
+                <input type="text" name="name" placeholder="Your Name" class="w-full p-3 mb-4 border rounded border-green-200">
+                <input type="email" name="email" placeholder="Your Email" class="w-full p-3 mb-4 border rounded border-green-200">
+                <select name="inquiry" class="w-full p-3 mb-4 border rounded border-green-200">
                     <option value="" disabled selected>I’m Interested In...</option>
                     <option value="buy">Buying a Property</option>
                     <option value="sell">Selling a Property</option>
                     <option value="other">Other</option>
                 </select>
-                <textarea placeholder="Tell us about your needs" class="w-full p-3 mb-4 border rounded border-green-200"></textarea>
-                <button class="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 w-full">Send Message</button>
-            </div>
+                <textarea name="message" placeholder="Tell us about your needs" class="w-full p-3 mb-4 border rounded border-green-200"></textarea>
+                <input type="text" name="_gotcha" class="honeypot">
+                <button type="submit" class="bg-green-600 text-white px-6 py-3 rounded hover:bg-green-700 w-full">Send Message</button>
+                <p id="form-message" class="text-red-600 mt-2 hidden">Error: Failed to send message. Please try again.</p>
+            </form>
         </div>
     </section>
 
@@ -110,6 +76,33 @@
                     behavior: 'smooth'
                 });
             });
+        });
+
+        // Form submission with error handling
+        document.getElementById('contact-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const form = e.target;
+            const message = document.getElementById('form-message');
+            try {
+                const response = await fetch(form.action, {
+                    method: form.method,
+                    body: new FormData(form),
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (response.ok) {
+                    message.classList.remove('hidden');
+                    message.classList.remove('text-red-600');
+                    message.classList.add('text-green-600');
+                    message.textContent = 'Message sent successfully!';
+                    form.reset();
+                } else {
+                    message.classList.remove('hidden');
+                    message.textContent = `Error: ${response.status} - ${response.statusText}`;
+                }
+            } catch (error) {
+                message.classList.remove('hidden');
+                message.textContent = `Error: ${error.message}`;
+            }
         });
     </script>
 </body>
